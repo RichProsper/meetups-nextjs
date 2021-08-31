@@ -1,81 +1,62 @@
-import classes from './NewMeetupForm.module.css'
-import Card from '../layouts/Card'
-import { useState, useRef } from 'react'
+import { useRef } from 'react';
 
-export default function NewMeetupForm({ addMeetup }) {
-    const [isFocused, setIsFocused] = useState('title')
-    const form = useRef()
+import Card from '../ui/Card';
+import classes from './NewMeetupForm.module.css';
 
-    /**
-     * @param {SubmitEvent} e 
-     */
-    const submitForm = e => {
-        e.preventDefault()
+function NewMeetupForm(props) {
+  const titleInputRef = useRef();
+  const imageInputRef = useRef();
+  const addressInputRef = useRef();
+  const descriptionInputRef = useRef();
 
-        addMeetup({
-            title: form.current.title.value,
-            image: form.current.image.value,
-            address: form.current.addr.value,
-            description: form.current.desc.value,
-            isFavorite: false
-        })
-    }
+  function submitHandler(event) {
+    event.preventDefault();
 
-    return (
-        <Card>
-            <form ref={form} className={classes.NewMeetupForm} onSubmit={submitForm}>
-                <div id="controls">
-                    <div className={classes.control + (isFocused === 'title' ? ' ' + classes.focused : '')}>
-                        <input 
-                            name="title" 
-                            type="text"
-                            placeholder="Title..."
-                            autoFocus
-                            onFocus={() => {setIsFocused('title')}}
-                            onBlur={() => {setIsFocused('')}}
-                            required 
-                        />
-                        <span>Meetup Title *</span>
-                    </div>
-                    <div className={classes.control + (isFocused === 'image' ? ' ' + classes.focused : '')}>
-                        <input 
-                            name="image" 
-                            type="url"
-                            placeholder="URL..."
-                            onFocus={() => {setIsFocused('image')}}
-                            onBlur={() => {setIsFocused('')}}
-                            required 
-                        />
-                        <span>Image URL *</span>
-                    </div>
-                    <div className={classes.control + (isFocused === 'addr' ? ' ' + classes.focused : '')}>
-                        <input 
-                            name="addr" 
-                            type="text"
-                            placeholder="Address..."
-                            onFocus={() => {setIsFocused('addr')}}
-                            onBlur={() => {setIsFocused('')}}
-                            required 
-                        />
-                        <span>Address *</span>
-                    </div>
-                    <div className={classes.control + (isFocused === 'desc' ? ' ' + classes.focused : '')}>
-                        <textarea 
-                            name="desc" 
-                            rows="5"
-                            placeholder="Description..."
-                            onFocus={() => {setIsFocused('desc')}}
-                            onBlur={() => {setIsFocused('')}}
-                            required
-                        ></textarea>
-                        <span>Description *</span>
-                    </div>
-                </div>
+    const enteredTitle = titleInputRef.current.value;
+    const enteredImage = imageInputRef.current.value;
+    const enteredAddress = addressInputRef.current.value;
+    const enteredDescription = descriptionInputRef.current.value;
 
-                <div className={classes.action}>
-                    <button type="submit">Add Meetup</button>
-                </div>
-            </form>
-        </Card>
-    )
+    const meetupData = {
+      title: enteredTitle,
+      image: enteredImage,
+      address: enteredAddress,
+      description: enteredDescription,
+    };
+
+    props.onAddMeetup(meetupData);
+  }
+
+  return (
+    <Card>
+      <form className={classes.form} onSubmit={submitHandler}>
+        <div className={classes.control}>
+          <label htmlFor='title'>Meetup Title</label>
+          <input type='text' required id='title' ref={titleInputRef} />
+        </div>
+        <div className={classes.control}>
+          <label htmlFor='image'>Meetup Image</label>
+          <input type='url' required id='image' ref={imageInputRef} />
+        </div>
+        <div className={classes.control}>
+          <label htmlFor='address'>Address</label>
+          <input type='text' required id='address' ref={addressInputRef} />
+        </div>
+        <div className={classes.control}>
+          <label htmlFor='description'>Description</label>
+          <textarea
+            id='description'
+            required
+            rows='5'
+            ref={descriptionInputRef}
+          ></textarea>
+        </div>
+        <div className={classes.actions}>
+          <button>Add Meetup</button>
+        </div>
+      </form>
+    </Card>
+  );
 }
+
+export default NewMeetupForm;
