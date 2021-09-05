@@ -9,7 +9,15 @@ export default async function handler(req, res) {
             const db = client.db()
             const meetupsCollection = db.collection('meetups')
 
-            meetupsCollection.insertOne
+            const result = await meetupsCollection.insertOne(JSON.parse(data))
+            console.log(result)
+
+            client.close()
+
+            res.status(201).json({ message: 'Meetup inserted' })
+        }
+        else {
+            res.status(400).json({ message: 'Missing Data!' })
         }
     }
 }
