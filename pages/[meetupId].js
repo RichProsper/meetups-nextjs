@@ -1,40 +1,63 @@
 import React from 'react'
+import { MongoClient, ObjectId } from 'mongodb'
+import Head from 'next/head'
 
-export default function meetup_details({ meetupDetails }) {
+export default function meetup_details({ meetup }) {
     return (
-        <div id={meetupDetails.id}>
+        <>
+            <Head>
+                <title>{meetup.title}</title>
+                <meta name='description' content={meetup.description} />
+                <meta name="keywords" content="Meetups, Places, Spots"></meta>
+            </Head>
             <img
-                src={meetupDetails.image}
-                alt={meetupDetails.title}
+                src={meetup.image}
+                alt={meetup.title}
+                style={{width: '500px', height: 'auto'}}
             />
-            <h1>{meetupDetails.title}</h1>
-            <address>{meetupDetails.address}</address>
-            <p>{meetupDetails.description}</p>
-        </div>
+            <h1>{meetup.title}</h1>
+            <address>{meetup.address}</address>
+            <p>{meetup.description}</p>
+        </>
     )
 }
 
 export const getStaticPaths = async () => {
+    const client = await MongoClient.connect('mongodb+srv://richp:richPMongod1b@cluster0.rsa9t.mongodb.net/meetups?retryWrites=true&w=majority')
+    const db = client.db()
+    const meetupsCollection = db.collection('meetups')
+
+    const meetupIds = await meetupsCollection.find({}, {_id: 1}).toArray()
+    client.close()
+
     return {
-        fallback: false,
-        paths: [
-            { params: {meetupId: '1'} },
-            { params: {meetupId: '2'} }
-        ]
+        fallback: 'blocking',
+        paths: meetupIds.map(meetup => {
+            return {
+                params: { meetupId: meetup._id.toString() }
+            }
+        })
     }
 }
 
 export const getStaticProps = async context => {
     const id = context.params.meetupId
 
+    const client = await MongoClient.connect('mongodb+srv://richp:richPMongod1b@cluster0.rsa9t.mongodb.net/meetups?retryWrites=true&w=majority')
+    const db = client.db()
+    const meetupsCollection = db.collection('meetups')
+
+    const meetup = await meetupsCollection.findOne({_id: ObjectId(id)})
+    client.close()
+
     return {
         props: {
-            meetupDetails: {
-                id,
-                image: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.gvn-zUVatq-nVTY4mnV8bAHaEK%26pid%3DApi&f=1',
-                title: 'First Meetup',
-                address: '1234 Address',
-                description: 'Meetup Description'
+            meetup: {
+                id: meetup._id.toString(),
+                title: meetup.title,
+                image: meetup.image,
+                address: meetup.address,
+                description: meetup.description
             }
         }
     }

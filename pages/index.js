@@ -1,30 +1,39 @@
 import MeetupList from '../components/meetups/MeetupList'
+import { MongoClient } from 'mongodb'
+import Head from 'next/head'
 
 export default function index({ meetups }) {
-    return <MeetupList meetups={meetups} />
+    return (
+        <>
+            <Head>
+                <title>All Meetups</title>
+                <meta name='description' content='Browse your saved favorite Meetup spots' />
+                <meta name="keywords" content="Meetups, Places, Spots"></meta>
+            </Head>
+            <MeetupList meetups={meetups} />
+        </>
+    )
 }
 
 export const getStaticProps = async () => {
-    // Fetch data from an API
+    const client = await MongoClient.connect('mongodb+srv://richp:richPMongod1b@cluster0.rsa9t.mongodb.net/meetups?retryWrites=true&w=majority')
+    const db = client.db()
+    const meetupsCollection = db.collection('meetups')
+
+    const meetups = (await meetupsCollection.find().toArray()).map(meetup => {
+        return {
+            id: meetup._id.toString(),
+            title: meetup.title,
+            image: meetup.image,
+            address: meetup.address,
+        }
+    })
+    client.close()
+
     return {
         props: {
-            meetups: [
-                {
-                    id: 1,
-                    title: 'First Meet',
-                    image: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.gvn-zUVatq-nVTY4mnV8bAHaEK%26pid%3DApi&f=1',
-                    address: 'Address',
-                    desc: 'Description'
-                },
-                {
-                    id: 2,
-                    title: 'Second Meet',
-                    image: 'https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwallpoper.com%2Fimages%2F00%2F29%2F00%2F25%2Fforest_00290025.jpg&f=1&nofb=1',
-                    address: 'Address',
-                    desc: 'Description'
-                }
-            ]
+            meetups
         },
-        revalidate: 60 //Rebuild and redeploy every 10 seconds
+        revalidate: 60 //Rebuild and redeploy every 60 seconds
     }
 }

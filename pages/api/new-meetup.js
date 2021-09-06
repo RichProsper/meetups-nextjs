@@ -9,15 +9,17 @@ export default async function handler(req, res) {
             const db = client.db()
             const meetupsCollection = db.collection('meetups')
 
-            const result = await meetupsCollection.insertOne(JSON.parse(data))
-            console.log(result)
+            const result = await meetupsCollection.insertOne(data)
 
             client.close()
 
             res.status(201).json({ message: 'Meetup inserted' })
         }
         else {
-            res.status(400).json({ message: 'Missing Data!' })
+            res.status(400).json({ message: 'Missing Payload!' })
         }
+    }
+    else {
+        res.status(400).json({ message: `Request method ${req.method} not allowed!` })
     }
 }
